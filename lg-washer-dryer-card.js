@@ -1,7 +1,27 @@
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace")
 );
+
 const html = LitElement.prototype.html;
+
+const getAssetPath = () => {
+  const scripts = document.getElementsByTagName("script");
+  for (let i = 0; i < scripts.length; i++) {
+    if (scripts[i].src.includes("lg-washer-dryer-card.js")) {
+      return scripts[i].src.substring(0, scripts[i].src.lastIndexOf("/"));
+    }
+  }
+  return "/hacsfiles/lg-washer-dryer-card"; // Fallback
+};
+
+const BASE_PATH = getAssetPath();
+
+
+const css = LitElement.prototype.css || ((strings, ...values) => {
+  const factory = document.createElement('style');
+  factory.textContent = strings.reduce((acc, str, i) => acc + str + (values[i] || ''), '');
+  return factory.textContent;
+});
 
 const CARD_VERSION = '1.0.0';
 
@@ -11,7 +31,7 @@ console.info(
   'color: white; font-weight: bold; background: dimgray',
 );
 
-const cssUrl = '/hacsfiles/lg-washer-dryer-card/7segment.css';
+const cssUrl = `${BASE_PATH}/7segment.css`;
 if (!document.querySelector(`link[href="${cssUrl}"]`)) {
   const styleElement = document.createElement('link');
   styleElement.setAttribute('rel', 'stylesheet');
@@ -33,9 +53,9 @@ class LGThinQBaseCard extends LitElement {
       throw new Error("You need to define an entity");
     }
     if (!config.run_state_entity) {
-        throw new Error("You need to define a run_state_entity");
+      throw new Error("You need to define a run_state_entity");
     }
-    this.config = config;
+    this.config = JSON.parse(JSON.stringify(config));
   }
 
   getCardSize() {
@@ -49,21 +69,20 @@ class LGThinQBaseCard extends LitElement {
   _getFormattedTime(entity) {
     const runState = this.hass.states[this.config.run_state_entity]?.state;
     if (runState === '-' || runState === 'unavailable' || runState === 'Standby') {
-        return '-:--';
+      return '-:--';
     }
     const remainTime = this.hass.states[entity]?.attributes?.remain_time;
     if (remainTime) {
-        return remainTime.split(":").slice(0, 2).join(":");
+      return remainTime.split(":").slice(0, 2).join(":");
     }
     return ' ';
   }
 
   _renderImage(icon, entity, state, top, left, width = '20%') {
     const stateImage = state ? `${icon}-on.png` : `${icon}.png`;
-    const path = `/hacsfiles/lg-washer-dryer-card/images/`;
     return html`
       <img
-        src="${path}${stateImage}"
+        src="${BASE_PATH}/images/${stateImage}"
         style="
           top: ${top};
           left: ${left};
@@ -115,22 +134,21 @@ class LGThinQBaseCard extends LitElement {
       <ha-card>
         <div class="card-content">
           ${this.config.details.map(detail => {
-            return html`
+      return html`
               <div class="info-row">
                 <ha-icon icon="${detail.icon}"></ha-icon>
                 <div class="name">${detail.name}</div>
                 <div class="state">${attributes[detail.attribute]}</div>
               </div>
             `;
-          })}
+    })}
         </div>
       </ha-card>
     `;
   }
 
   static get styles() {
-    return html`
-      <style>
+    return css`
         .info-row {
           display: flex;
           align-items: center;
@@ -146,7 +164,6 @@ class LGThinQBaseCard extends LitElement {
         .info-row .state {
           color: var(--primary-text-color);
         }
-      </style>
     `;
   }
 }
@@ -155,12 +172,12 @@ class LGWasherCard extends LGThinQBaseCard {
   setConfig(config) {
     super.setConfig(config);
     if (!config.door_lock_entity) {
-        throw new Error("You need to define a door_lock_entity");
+      throw new Error("You need to define a door_lock_entity");
     }
     this.config.details = [
-        { name: "Current Course", attribute: "current_course", icon: "mdi:tune-vertical-variant" },
-        { name: "Water Temperature", attribute: "water_temp", icon: "mdi:coolant-temperature" },
-        { name: "Spin Speed", attribute: "spin_speed", icon: "mdi:rotate-right" },
+      { name: "Current Course", attribute: "current_course", icon: "mdi:tune-vertical-variant" },
+      { name: "Water Temperature", attribute: "water_temp", icon: "mdi:coolant-temperature" },
+      { name: "Spin Speed", attribute: "spin_speed", icon: "mdi:rotate-right" },
     ];
   }
 
@@ -172,7 +189,7 @@ class LGWasherCard extends LGThinQBaseCard {
     return html`
       <ha-card>
         <div style="position: relative;">
-          <img src="/hacsfiles/lg-washer-dryer-card/images/hass-washer-card-bg.png" style="width: 100%;" />
+          <img src="${BASE_PATH}/images/hass-washer-card-bg.png" style="width: 100%;" />
           ${this._renderImage('sensing', this.config.run_state_entity, runState === 'Detecting', '33%', '33%')}
           ${this._renderImage('wash', this.config.run_state_entity, runState === 'Washing', '33%', '51%')}
           ${this._renderImage('rinse', this.config.run_state_entity, runState === 'Rinsing', '33%', '69%')}
@@ -190,23 +207,23 @@ class LGWasherCard extends LGThinQBaseCard {
 customElements.define("lg-washer-card", LGWasherCard);
 
 class LGDryerCard extends LGThinQBaseCard {
-    setConfig(config) {
-        super.setConfig(config);
-        this.config.details = [
-            { name: "Current Course", attribute: "current_course", icon: "mdi:tune-vertical-variant" },
-            { name: "Temperature Control", attribute: "temp_control", icon: "mdi:thermometer" },
-            { name: "Dry Level", attribute: "dry_level", icon: "mdi:air-filter" },
-        ];
-    }
+  setConfig(config) {
+    super.setConfig(config);
+    this.config.details = [
+      { name: "Current Course", attribute: "current_course", icon: "mdi:tune-vertical-variant" },
+      { name: "Temperature Control", attribute: "temp_control", icon: "mdi:thermometer" },
+      { name: "Dry Level", attribute: "dry_level", icon: "mdi:air-filter" },
+    ];
+  }
 
-    render() {
-        const runState = this.hass.states[this.config.run_state_entity]?.state;
-        const mainEntity = this.hass.states[this.config.entity];
+  render() {
+    const runState = this.hass.states[this.config.run_state_entity]?.state;
+    const mainEntity = this.hass.states[this.config.entity];
 
-        return html`
+    return html`
             <ha-card>
                 <div style="position: relative;">
-                    <img src="/hacsfiles/lg-washer-dryer-card/images/hass-dryer-card-bg.png" style="width: 100%;" />
+                    <img src="${BASE_PATH}/images/hass-dryer-card-bg.png" style="width: 100%;" />
                     ${this._renderImage('dry', this.config.run_state_entity, runState === 'Drying', '33%', '69%')}
                     ${this._renderImage('cool', this.config.run_state_entity, runState === 'Cooling', '33%', '87%')}
                     ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '73%', '32%', '10%')}
@@ -215,7 +232,7 @@ class LGDryerCard extends LGThinQBaseCard {
                 ${this._renderDetails()}
             </ha-card>
         `;
-    }
+  }
 }
 
 customElements.define("lg-dryer-card", LGDryerCard);
@@ -224,39 +241,39 @@ customElements.define("lg-dryer-card", LGDryerCard);
 // Configuration UI for the cards
 
 const cardTypes = {
-    'washer': {
-        name: 'LG Washer Card',
-        description: 'A card for LG ThinQ Washing Machines.',
-        preview: true,
-        documentationURL: 'https://github.com/m1ckyb/lg-washer-dryer-card',
-        entities: ['entity', 'run_state_entity', 'door_lock_entity']
-    },
-    'dryer': {
-        name: 'LG Dryer Card',
-        description: 'A card for LG ThinQ Dryers.',
-        preview: true,
-        documentationURL: 'https://github.com/m1ckyb/lg-washer-dryer-card',
-        entities: ['entity', 'run_state_entity']
-    }
+  'washer': {
+    name: 'LG Washer Card',
+    description: 'A card for LG ThinQ Washing Machines.',
+    preview: true,
+    documentationURL: 'https://github.com/m1ckyb/lg-washer-dryer-card',
+    entities: ['entity', 'run_state_entity', 'door_lock_entity']
+  },
+  'dryer': {
+    name: 'LG Dryer Card',
+    description: 'A card for LG ThinQ Dryers.',
+    preview: true,
+    documentationURL: 'https://github.com/m1ckyb/lg-washer-dryer-card',
+    entities: ['entity', 'run_state_entity']
+  }
 };
 
 for (const [type, config] of Object.entries(cardTypes)) {
-    const editor = class extends LitElement {
-        static get properties() {
-            return { hass: {}, _config: {} };
-        }
+  const editor = class extends LitElement {
+    static get properties() {
+      return { hass: {}, _config: {} };
+    }
 
-        setConfig(config) {
-            this._config = config;
-        }
+    setConfig(config) {
+      this._config = config;
+    }
 
-        render() {
-            if (!this.hass) return html``;
+    render() {
+      if (!this.hass) return html``;
 
-            return html`
+      return html`
                 <div class="card-config">
                     ${config.entities.map(entityConf => {
-                        return html`
+        return html`
                             <ha-entity-picker
                                 .label="${entityConf.replace('_', ' ')}"
                                 .hass=${this.hass}
@@ -266,27 +283,27 @@ for (const [type, config] of Object.entries(cardTypes)) {
                                 allow-custom-entity
                             ></ha-entity-picker>
                         `;
-                    })}
+      })}
                 </div>
             `;
-        }
+    }
 
-        _valueChanged(ev) {
-            if (!this._config || !this.hass) return;
-            const { target } = ev;
-            const newConfig = { ...this._config, [target.configValue]: target.value };
-            this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
-        }
-    };
+    _valueChanged(ev) {
+      if (!this._config || !this.hass) return;
+      const { target } = ev;
+      const newConfig = { ...this._config, [target.configValue]: target.value };
+      this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
+    }
+  };
 
-    customElements.define(`lg-${type}-card-editor`, editor);
-    window.customCards = window.customCards || [];
-    window.customCards.push({
-        type: `lg-${type}-card`,
-        name: config.name,
-        description: config.description,
-        preview: config.preview,
-        documentationURL: config.documentationURL,
-        editMode: `lg-${type}-card-editor`,
-    });
+  customElements.define(`lg-${type}-card-editor`, editor);
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: `lg-${type}-card`,
+    name: config.name,
+    description: config.description,
+    preview: config.preview,
+    documentationURL: config.documentationURL,
+    editMode: `lg-${type}-card-editor`,
+  });
 }
