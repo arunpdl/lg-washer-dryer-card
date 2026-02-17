@@ -7,6 +7,6 @@
   "include": [
     "images",
     "7segment.css",
-    "7segment.ttf"
+    "7segment.woff"
   ]
 }
