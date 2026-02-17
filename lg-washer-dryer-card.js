@@ -82,7 +82,7 @@ class LGThinQBaseCard extends LitElement {
     const stateImage = state ? `${icon}-on.png` : `${icon}.png`;
     return html`
       <img
-        src="${BASE_PATH}/images/${stateImage}"
+        src="${BASE_PATH}/images/lg-icons/${stateImage}"
         style="
           top: ${top};
           left: ${left};
@@ -189,7 +189,7 @@ class LGWasherCard extends LGThinQBaseCard {
     return html`
       <ha-card>
         <div style="position: relative;">
-          <img src="${BASE_PATH}/images/hass-washer-card-bg.png" style="width: 100%;" />
+          <img src="${BASE_PATH}/images/hass-combo-card-bg.png" style="width: 100%;" />
           ${this._renderImage('sensing', this.config.run_state_entity, runState === 'Detecting', '33%', '33%')}
           ${this._renderImage('wash', this.config.run_state_entity, runState === 'Washing', '33%', '51%')}
           ${this._renderImage('rinse', this.config.run_state_entity, runState === 'Rinsing', '33%', '69%')}
@@ -245,14 +245,14 @@ const cardTypes = {
     name: 'LG Washer Card',
     description: 'A card for LG ThinQ Washing Machines.',
     preview: true,
-    documentationURL: 'https://github.com/m1ckyb/lg-washer-dryer-card',
+    documentationURL: 'https://github.com/arunpdl/lg-washer-dryer-card',
     entities: ['entity', 'run_state_entity', 'door_lock_entity']
   },
   'dryer': {
     name: 'LG Dryer Card',
     description: 'A card for LG ThinQ Dryers.',
     preview: true,
-    documentationURL: 'https://github.com/m1ckyb/lg-washer-dryer-card',
+    documentationURL: 'https://github.com/arunpdl/lg-washer-dryer-card',
     entities: ['entity', 'run_state_entity']
   }
 };
