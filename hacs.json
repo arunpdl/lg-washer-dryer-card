@@ -3,5 +3,6 @@
   "filename": "lg-washer-dryer-card.js",
   "render_readme": true,
   "content_type": "plugin",
-  "zip_release": false
+  "zip_release": false,
+  "content_in_root": false
 }
