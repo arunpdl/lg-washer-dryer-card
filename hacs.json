@@ -1,6 +1,12 @@
 {
-  "name": "LG ThinQ Cards",
+  "name": "LG Washer Dryer Card (Modernized)",
+  "filename": "lg-washer-dryer-card.js",
   "render_readme": true,
-  "content_in_root": true,
-  "filename": "lg-washer-dryer-card.js"
+  "content_type": "plugin",
+  "zip_release": false,
+  "include": [
+    "images",
+    "7segment.css",
+    "7segment.ttf"
+  ]
 }
