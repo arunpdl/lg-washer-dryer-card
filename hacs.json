@@ -1,12 +1,7 @@
 {
   "name": "LG Washer Dryer Card (Modernized)",
-  "filename": "lg-washer-dryer-card.js",
+  "filename": "lg-washer-dryer-card.zip",
   "render_readme": true,
   "content_type": "plugin",
-  "zip_release": false,
-  "include": [
-    "images",
-    "7segment.css",
-    "7segment.woff"
-  ]
+  "zip_release": true
 }
