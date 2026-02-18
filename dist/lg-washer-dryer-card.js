@@ -71,7 +71,7 @@ class LGThinQBaseCard extends LitElement {
     if (runState === '-' || runState === 'unavailable' || runState === 'Standby') {
       return '-:--';
     }
-    const remainTime = this.hass.states[entity]?.attributes?.remain_time;
+    const remainTime = this.hass.states[entity]?.attributes?.remaining_time;
     if (remainTime) {
       return remainTime.split(":").slice(0, 2).join(":");
     }
@@ -96,30 +96,19 @@ class LGThinQBaseCard extends LitElement {
 
   _renderTimeDisplay() {
     const time = this._getFormattedTime(this.config.entity);
+    const commonStyle = `
+    font-family: 'segment7';
+    font-size: 55px;
+    position: absolute;
+    right: 55px;
+    top: 50%;
+    text-align: right;
+    letter-spacing: 2px;
+  `;
     return html`
-      <div
-        style="
-          color: #555;
-          font-family: segment7;
-          font-size: 50px;
-          position: absolute;
-          left: 95%;
-          top: 74%;
-          transform: translate(-100%, -50%);
-        "
-      >18:88</div>
-      <div
-        style="
-          color: #8df427;
-          font-family: segment7;
-          font-size: 50px;
-          position: absolute;
-          left: 95%;
-          top: 74%;
-          transform: translate(-100%, -50%);
-        "
-      >${time}</div>
-    `;
+    <div style="${commonStyle} color: rgba(255, 255, 255, 0.05); z-index: 1;">88:88</div>
+    <div style="${commonStyle} color: #8df427; z-index: 2; text-shadow: 0 0 10px rgba(141, 244, 39, 0.5);">${time}</div>
+  `;;
   }
 
   _renderDetails() {
@@ -148,23 +137,25 @@ class LGThinQBaseCard extends LitElement {
   }
 
   static get styles() {
-    return css`
-        .info-row {
-          display: flex;
-          align-items: center;
-          padding: 4px 0;
-        }
-        .info-row ha-icon {
-          margin-right: 16px;
-          color: var(--paper-item-icon-color);
-        }
-        .info-row .name {
-          flex: 1;
-        }
-        .info-row .state {
-          color: var(--primary-text-color);
-        }
-    `;
+    return LitElement.prototype.css`
+    :host {
+      display: block;
+    }
+    .main-container {
+      position: relative;
+      width: 100%;
+      /* Adjust this ratio if your background image is a different shape */
+      aspect-ratio: 2.34 / 1; 
+      overflow: hidden;
+      background-color: #1c1c1c; /* Matches the dark background */
+    }
+    .status-image {
+      position: absolute;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+      transition: opacity 0.3s ease-in-out;
+    }
+  `;
   }
 }
 
@@ -187,20 +178,23 @@ class LGWasherCard extends LGThinQBaseCard {
     const doorLock = this.hass.states[this.config.door_lock_entity];
 
     return html`
-      <ha-card>
-        <div style="position: relative;">
-          <img src="${BASE_PATH}/images/hass-combo-card-bg.png" style="width: 100%;" />
-          ${this._renderImage('sensing', this.config.run_state_entity, runState === 'Detecting', '33%', '33%')}
-          ${this._renderImage('wash', this.config.run_state_entity, runState === 'Washing', '33%', '51%')}
-          ${this._renderImage('rinse', this.config.run_state_entity, runState === 'Rinsing', '33%', '69%')}
-          ${this._renderImage('spin', this.config.run_state_entity, runState === 'Spinning', '33%', '87%')}
-          ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '73%', '32%', '10%')}
-          ${this._renderImage('lock', this.config.door_lock_entity, doorLock?.state === 'on', '73%', '45%', '10%')}
-          ${this._renderTimeDisplay()}
-        </div>
-        ${this._renderDetails()}
-      </ha-card>
-    `;
+    <ha-card style="overflow: hidden;">
+      <div style="position: relative; width: 100%; aspect-ratio: 2.3 / 1;">
+        <img src="${BASE_PATH}/images/hass-combo-card-bg.png" style="width: 100%; display: block;" />
+        
+        ${this._renderImage('sensing', this.config.run_state_entity, runState === 'Detecting', '10%', '25%')}
+        ${this._renderImage('wash', this.config.run_state_entity, runState === 'Washing', '10%', '44%')}
+        ${this._renderImage('rinse', this.config.run_state_entity, runState === 'Rinsing', '10%', '62%')}
+        ${this._renderImage('spin', this.config.run_state_entity, runState === 'Spinning', '10%', '78%')}
+        
+        ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '62%', '32%', '8%')}
+        ${this._renderImage('lock', this.config.door_lock_entity, doorLock?.state === 'on', '62%', '45%', '8%')}
+        
+        ${this._renderTimeDisplay()}
+      </div>
+      ${this._renderDetails()}
+    </ha-card>
+  `;
   }
 }
 
@@ -224,9 +218,9 @@ class LGDryerCard extends LGThinQBaseCard {
             <ha-card>
                 <div style="position: relative;">
                     <img src="${BASE_PATH}/images/hass-dryer-card-bg.png" style="width: 100%;" />
-                    ${this._renderImage('dry', this.config.run_state_entity, runState === 'Drying', '33%', '69%')}
-                    ${this._renderImage('cool', this.config.run_state_entity, runState === 'Cooling', '33%', '87%')}
-                    ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '73%', '32%', '10%')}
+                    ${this._renderImage('dry', this.config.run_state_entity, runState === 'Drying', '10%', '69%')}
+                    ${this._renderImage('cool', this.config.run_state_entity, runState === 'Cooling', '10%', '87%')}
+                    ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '62%', '32%', '10%')}
                     ${this._renderTimeDisplay()}
                 </div>
                 ${this._renderDetails()}
