@@ -67,19 +67,30 @@ class LGThinQBaseCard extends LitElement {
   }
 
   _getFormattedTime(entity) {
+
     const runState = this.hass.states[this.config.run_state_entity]?.state;
     if (runState === '-' || runState === 'unavailable' || runState === 'Standby') {
       return '-:--';
     }
-    const remainTime = this.hass.states[entity]?.attributes?.remaining_time;
+    const remainTime = this.hass.states[entity]?.attributes?.remain_time;
     if (remainTime) {
       return remainTime.split(":").slice(0, 2).join(":");
     }
     return ' ';
   }
 
-  _renderImage(icon, entity, state, top, left, width = '20%') {
+  _renderImage(icon, entity, state, top, left, width = '20%', isActionIcon = true) {
+
+    // 1. Determine if the machine is actually doing something
+    const runState = this.hass.states[this.config.run_state_entity]?.state;
+    const isRunning = runState && !['-', 'unavailable', 'Standby', 'Off', 'None'].includes(runState);
+
+    // 2. Select the image (on vs off)
     const stateImage = state ? `${icon}-on.png` : `${icon}.png`;
+
+    // 3. Apply animation ONLY if the icon is "on" AND the machine is "Running"
+    const animationStyle = (state && isRunning && isActionIcon) ? `animation: fade-blink 1.5s ease-in-out infinite;` : '';
+
     return html`
       <img
         src="${BASE_PATH}/images/lg-icons/${stateImage}"
@@ -89,6 +100,7 @@ class LGThinQBaseCard extends LitElement {
           width: ${width};
           position: absolute;
           image-rendering: crisp;
+          ${animationStyle}
         "
       />
     `;
@@ -155,6 +167,26 @@ class LGThinQBaseCard extends LitElement {
       image-rendering: pixelated;
       transition: opacity 0.3s ease-in-out;
     }
+  .info-row {
+      display: flex;
+      align-items: center;
+      padding: 4px 0;
+    }
+    .info-row ha-icon {
+      margin-right: 16px;
+      color: var(--paper-item-icon-color);
+    }
+    .info-row .name {
+      flex: 1;
+    }
+    .info-row .state {
+      color: var(--primary-text-color);
+    }
+    @keyframes fade-blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
   `;
   }
 }
@@ -182,13 +214,13 @@ class LGWasherCard extends LGThinQBaseCard {
       <div style="position: relative; width: 100%; aspect-ratio: 2.3 / 1;">
         <img src="${BASE_PATH}/images/hass-combo-card-bg.png" style="width: 100%; display: block;" />
         
-        ${this._renderImage('sensing', this.config.run_state_entity, runState === 'Detecting', '10%', '25%')}
-        ${this._renderImage('wash', this.config.run_state_entity, runState === 'Washing', '10%', '44%')}
-        ${this._renderImage('rinse', this.config.run_state_entity, runState === 'Rinsing', '10%', '62%')}
-        ${this._renderImage('spin', this.config.run_state_entity, runState === 'Spinning', '10%', '78%')}
+        ${this._renderImage('sensing', this.config.run_state_entity, runState === 'Detecting', '10%', '25%', true)}
+        ${this._renderImage('wash', this.config.run_state_entity, runState === 'Washing', '10%', '44%', true)}
+        ${this._renderImage('rinse', this.config.run_state_entity, runState === 'Rinsing', '10%', '62%', true)}
+        ${this._renderImage('spin', this.config.run_state_entity, runState === 'Spinning', '10%', '78%', true)}
         
-        ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '62%', '32%', '8%')}
-        ${this._renderImage('lock', this.config.door_lock_entity, doorLock?.state === 'on', '62%', '45%', '8%')}
+        ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '62%', '32%', '8%', false)}
+        ${this._renderImage('lock', this.config.door_lock_entity, doorLock?.state === 'on', '62%', '45%', '8%', false)}
         
         ${this._renderTimeDisplay()}
       </div>
@@ -218,9 +250,9 @@ class LGDryerCard extends LGThinQBaseCard {
             <ha-card>
                 <div style="position: relative;">
                     <img src="${BASE_PATH}/images/hass-dryer-card-bg.png" style="width: 100%;" />
-                    ${this._renderImage('dry', this.config.run_state_entity, runState === 'Drying', '10%', '69%')}
-                    ${this._renderImage('cool', this.config.run_state_entity, runState === 'Cooling', '10%', '87%')}
-                    ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '62%', '32%', '10%')}
+                    ${this._renderImage('dry', this.config.run_state_entity, runState === 'Drying', '10%', '69%', true)}
+                    ${this._renderImage('cool', this.config.run_state_entity, runState === 'Cooling', '10%', '87%', true)}
+                    ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '62%', '32%', '10%', false)}
                     ${this._renderTimeDisplay()}
                 </div>
                 ${this._renderDetails()}
