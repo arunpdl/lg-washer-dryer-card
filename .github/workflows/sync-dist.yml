@@ -1,0 +1,26 @@
+name: Sync Dist Folder
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run sync script
+        run: chmod +x scripts/sync-dist.sh && ./scripts/sync-dist.sh
+
+      - name: Commit and push if needed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto-sync dist folder"
+          file_pattern: 'dist/*'

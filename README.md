@@ -29,8 +29,27 @@ Washer/Dryer: This card is expected to apply pretty widely to any/all LG ThinQ w
 
 There is no longer any need to modify `configuration.yaml` or manually add resources.
 
-# Notes
-7segment font (c) Jan Bobrowski (OFL) - http://torinak.com/7segment
+Add the following to your dashboard after selecting lg-washer-card:
+```bash
+type: custom:lg-washer-card
+entity: sensor.washer
+run_state_entity: sensor.washer_run_state
+remain_time_entity: sensor.washer_remaining_time
+door_lock_entity: binary_sensor.washer_door_lock
+current_course: sensor.washer_current_course
+```
+
+
+# Development
+
+If you are contributing to this project or working on it across multiple machines, please run the setup script to install the necessary Git hooks:
+
+```bash
+chmod +x scripts/install-hooks.sh
+./scripts/install-hooks.sh
+```
+
+This will ensure that the `dist` folder is automatically kept in sync with the `src` folder before every commit.
 
 ---
 *This integration was converted to be HACS-compatible with assistance from a Google AI.*
