@@ -194,9 +194,13 @@ class LGThinQBaseCard extends LitElement {
 class LGWasherCard extends LGThinQBaseCard {
   setConfig(config) {
     super.setConfig(config);
-    if (!config.door_lock_entity) {
-      throw new Error("You need to define a door_lock_entity");
-    }
+    // door_lock_entity is optional. Most integrations (e.g.
+    // ha-smartthinq-sensors) expose door lock as an attribute on the main
+    // entity rather than its own entity - same as every other field this
+    // card reads (remain_time, current_course, water_temp, spin_speed).
+    // door_lock_attribute lets that default be overridden if a given
+    // integration names it differently.
+    this.config.door_lock_attribute = config.door_lock_attribute || 'door_lock';
     this.config.details = [
       { name: "Current Course", attribute: "current_course", icon: "mdi:tune-vertical-variant" },
       { name: "Water Temperature", attribute: "water_temp", icon: "mdi:coolant-temperature" },
@@ -207,21 +211,23 @@ class LGWasherCard extends LGThinQBaseCard {
   render() {
     const runState = this.hass.states[this.config.run_state_entity]?.state;
     const mainEntity = this.hass.states[this.config.entity];
-    const doorLock = this.hass.states[this.config.door_lock_entity];
+    const doorLockOn = this.config.door_lock_entity
+      ? this.hass.states[this.config.door_lock_entity]?.state === 'on'
+      : mainEntity?.attributes?.[this.config.door_lock_attribute] === 'on';
 
     return html`
     <ha-card style="overflow: hidden;">
       <div style="position: relative; width: 100%; aspect-ratio: 2.3 / 1;">
         <img src="${BASE_PATH}/images/hass-combo-card-bg.png" style="width: 100%; display: block;" />
-        
+
         ${this._renderImage('sensing', this.config.run_state_entity, runState === 'Detecting', '10%', '25%', true)}
         ${this._renderImage('wash', this.config.run_state_entity, runState === 'Washing', '10%', '44%', true)}
         ${this._renderImage('rinse', this.config.run_state_entity, runState === 'Rinsing', '10%', '62%', true)}
         ${this._renderImage('spin', this.config.run_state_entity, runState === 'Spinning', '10%', '78%', true)}
-        
+
         ${this._renderImage('wifi', this.config.entity, mainEntity?.state === 'on', '62%', '32%', '8%', false)}
-        ${this._renderImage('lock', this.config.door_lock_entity, doorLock?.state === 'on', '62%', '45%', '8%', false)}
-        
+        ${this._renderImage('lock', this.config.door_lock_entity, doorLockOn, '62%', '45%', '8%', false)}
+
         ${this._renderTimeDisplay()}
       </div>
       ${this._renderDetails()}
