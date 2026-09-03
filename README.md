@@ -22,21 +22,26 @@ Washer/Dryer: This card is expected to apply pretty widely to any/all LG ThinQ w
 1. Go to your desired Lovelace dashboard and click "Add Card".
 2. Search for "LG Washer Card" or "LG Dryer Card" and select it.
 3. Use the visual editor to select the entities from your LG ThinQ integration.
-    - **Entity**: The main sensor for your machine (e.g., `sensor.washer`).
+    - **Entity**: The main sensor for your machine (e.g., `sensor.washer`). `remain_time`, `current_course`, `water_temp`, and `spin_speed` are all read as *attributes* of this one entity - most integrations (including [ha-smartthinq-sensors](https://github.com/ollo69/ha-smartthinq-sensors)) already expose them that way, so there's nothing else to configure for those.
     - **Run State Entity**: The sensor that shows the current state (e.g., `sensor.washer_run_state`).
-    - **Door Lock Entity** (for washer): The sensor that shows the door lock status (e.g., `sensor.washer_door_lock`).
+    - **Door Lock Entity** (optional, washer only): Only needed if your integration exposes door lock as its *own* entity. Otherwise the card reads the `door_lock` attribute off `entity` automatically, same as the fields above - override the attribute name with `door_lock_attribute` if yours is called something else.
 4. Click "Save".
 
 There is no longer any need to modify `configuration.yaml` or manually add resources.
 
-Add the following to your dashboard after selecting lg-washer-card:
-```bash
+Minimal working example (matches `sensor.washer` / `sensor.washer_run_state` from ha-smartthinq-sensors - no door lock config needed):
+```yaml
 type: custom:lg-washer-card
 entity: sensor.washer
 run_state_entity: sensor.washer_run_state
-remain_time_entity: sensor.washer_remaining_time
+```
+
+With a separate door-lock entity instead (only if your integration provides one):
+```yaml
+type: custom:lg-washer-card
+entity: sensor.washer
+run_state_entity: sensor.washer_run_state
 door_lock_entity: binary_sensor.washer_door_lock
-current_course: sensor.washer_current_course
 ```
 
 
